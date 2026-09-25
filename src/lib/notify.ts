@@ -1,5 +1,5 @@
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
-import { inTauri } from '../lib/platform';
+import { inTauri } from './platform';
 
 let granted: boolean | null = null;
 

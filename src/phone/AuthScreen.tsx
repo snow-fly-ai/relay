@@ -12,13 +12,13 @@ export function AuthScreen() {
   const sendCode = async () => {
     setBusy(true);
     setError(null);
-    const { error } = await phoneClient.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: true },
+    // Codes are delivered to the Relay bridge on the PC (see supabase/functions/request-code).
+    const { data, error } = await phoneClient.functions.invoke('request-code', {
+      body: { email: email.trim().toLowerCase() },
     });
     setBusy(false);
-    if (error) {
-      setError(/not allowed|Database error/i.test(error.message) ? 'This email is not allowed to use Relay.' : error.message);
+    if (error || data?.error) {
+      setError(data?.error || error?.message || 'Could not send a code');
       return;
     }
     setStep('code');
@@ -33,7 +33,7 @@ export function AuthScreen() {
       type: 'email',
     });
     setBusy(false);
-    if (error) setError(error.message);
+    if (error) setError(/expired|invalid/i.test(error.message) ? 'That code is wrong or expired. Request a new one.' : error.message);
   };
 
   return (
@@ -64,7 +64,7 @@ export function AuthScreen() {
               />
             </label>
             <button className="primary" disabled={busy || !/\S+@\S+\.\S+/.test(email)}>
-              {busy ? 'Sending…' : 'Email me a sign-in code'}
+              {busy ? 'Sending…' : 'Get a sign-in code'}
             </button>
           </form>
         ) : (
@@ -75,7 +75,7 @@ export function AuthScreen() {
             }}
           >
             <p className="hint">
-              Enter the code we sent to <b>{email}</b>
+              Your code for <b>{email}</b> is showing in the Relay bridge on your PC.
             </p>
             <input
               className="code"

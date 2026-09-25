@@ -12,8 +12,10 @@ const gradlePath = join(gen, 'app/build.gradle.kts');
 let gradle = readFileSync(gradlePath, 'utf8');
 
 if (!gradle.includes('signingConfigs')) {
-  if (!gradle.startsWith('import java.io.FileInputStream')) {
-    gradle = `import java.io.FileInputStream\n${gradle}`;
+  // Inside `android {}` a bare `java.` resolves to the Android `java` extension,
+  // so these must be imported rather than fully qualified.
+  for (const imp of ['java.io.FileInputStream', 'java.util.Properties']) {
+    if (!gradle.includes(`import ${imp}\n`)) gradle = `import ${imp}\n${gradle}`;
   }
   gradle = gradle.replace(
     /android \{\n/,
@@ -21,7 +23,7 @@ if (!gradle.includes('signingConfigs')) {
     signingConfigs {
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
-            val keystoreProperties = java.util.Properties()
+            val keystoreProperties = Properties()
             if (keystorePropertiesFile.exists()) {
                 keystoreProperties.load(FileInputStream(keystorePropertiesFile))
             }

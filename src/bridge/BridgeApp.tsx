@@ -199,6 +199,15 @@ function Dashboard({ config, host, version }: { config: BridgeConfig; host: Host
             </div>
           </div>
         </header>
+        {snap.loginCode && Date.parse(snap.loginCode.expires_at) > now && (
+          <div className="login-code">
+            <div>
+              <div className="login-code-label">Phone sign-in code for {snap.loginCode.email}</div>
+              <div className="login-code-value">{snap.loginCode.code}</div>
+            </div>
+            <button className="link" onClick={() => engine.dismissLoginCode()}>Dismiss</button>
+          </div>
+        )}
         <MessageList messages={messages} self="claude" empty={<div className="empty"><p>No messages yet. Anything sent from the phone shows up here.</p></div>} />
         <ActivityBar agent={agent} working={working} onStop={() => engine.stopCurrent()} />
         <Composer placeholder="Send a note to the phone as Claude" onSend={(t) => engine.sendAsClaude(t)} enterSends />

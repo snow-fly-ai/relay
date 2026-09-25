@@ -377,6 +377,15 @@ input, textarea, select { font: inherit; color: inherit; }
 .main-title { font-weight: 650; font-size: 16px; }
 .main-sub { color: var(--muted); font-size: 12.5px; }
 .main .messages { padding: 18px 24px; }
+.login-code {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 16px 20px 0; padding: 16px 20px;
+  border-radius: 16px;
+  background: linear-gradient(120deg, rgba(255, 106, 77, 0.16), rgba(255, 176, 84, 0.08));
+  border: 1px solid rgba(255, 138, 90, 0.35);
+}
+.login-code-label { color: var(--text-2); font-size: 13px; }
+.login-code-value { font-family: var(--mono); font-size: 30px; font-weight: 700; letter-spacing: 0.3em; color: var(--accent-2); }
 .main .composer { margin: 0 20px 18px; }
 .main .activity { margin: 0 20px 10px; }
 

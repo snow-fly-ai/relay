@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { phoneClient } from './client';
-import { ensureNotifyPermission, notify } from './notify';
+import { ensureNotifyPermission, notify } from '../lib/notify';
 import { useConversation, useNow } from '../lib/useConversation';
 import { checkPhoneUpdate, type PhoneUpdate } from '../lib/updates';
 import { openExternal } from '../lib/open';

@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { notify } from '../lib/notify';
 import { SUPABASE_URL } from '../lib/config';
 import type { Message } from '../lib/types';
 import {
@@ -18,7 +19,14 @@ export interface LogEntry {
   text: string;
 }
 
+export interface LoginCode {
+  email: string;
+  code: string;
+  expires_at: string;
+}
+
 export interface EngineSnapshot {
+  loginCode: LoginCode | null;
   running: boolean;
   busy: boolean;
   activity: string | null;
@@ -59,7 +67,7 @@ export class BridgeEngine {
     this.client = createClient(SUPABASE_URL, config.serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    this.snapshot = { running: false, busy: false, activity: null, current: null, log: [], config };
+    this.snapshot = { loginCode: null, running: false, busy: false, activity: null, current: null, log: [], config };
   }
 
   // ---- store plumbing for React -------------------------------------------------
@@ -97,6 +105,9 @@ export class BridgeEngine {
         if (m.body.trim() === '/stop') this.stopCurrent(m);
         else this.kick();
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'login_codes' }, (p) => {
+        this.showLoginCode(p.new as LoginCode);
+      })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') this.log('info', 'Listening for messages (realtime)');
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') this.log('error', `Realtime ${status.toLowerCase()}; polling instead`);
@@ -116,6 +127,18 @@ export class BridgeEngine {
     await this.goOffline();
     this.set({ running: false });
     this.log('info', 'Bridge paused');
+  }
+
+  /** Phone sign-in codes are shown here (and as a Windows notification) rather than emailed. */
+  private showLoginCode(c: LoginCode) {
+    if (Date.parse(c.expires_at) < Date.now()) return;
+    this.set({ loginCode: c });
+    this.log('info', `Sign-in code requested for ${c.email}`);
+    notify('Relay sign-in code', `${c.code} for ${c.email}`);
+  }
+
+  dismissLoginCode() {
+    this.set({ loginCode: null });
   }
 
   private goOffline = async () => {
