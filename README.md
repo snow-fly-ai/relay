@@ -46,7 +46,7 @@ git push --follow-tags
 
 ## Bridge config
 
-`%APPDATA%\com.snowfly.relay\bridge.json` (never committed):
+`~/.relay/bridge.json` (never committed; kept outside AppData so MSIX-packaged tools see the same file):
 
 ```json
 { "serviceKey": "…", "workspace": "C:\\Users\\you", "permissionMode": "bypassPermissions", "claudePath": "", "sessionId": "", "model": "" }

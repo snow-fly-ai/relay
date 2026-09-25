@@ -25,9 +25,11 @@ pub struct BridgeConfig {
     pub model: String,
 }
 
+/// `~/.relay/bridge.json`. Kept out of AppData so tools running inside
+/// packaged (MSIX) apps, like the Claude desktop app, see the same file.
 fn config_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
-    Ok(dir.join("bridge.json"))
+    let home = app.path().home_dir().map_err(|e| e.to_string())?;
+    Ok(home.join(".relay").join("bridge.json"))
 }
 
 #[tauri::command]
