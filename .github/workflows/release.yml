@@ -23,9 +23,14 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           TAG="$GITHUB_REF_NAME"
-          gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --draft --title "Relay $TAG" --notes "Relay $TAG — Android APK and Windows installer."
-          echo "id=$(gh api "repos/$GH_REPO/releases" --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -n1)" >> "$GITHUB_OUTPUT"
+          ID=$(gh api "repos/$GH_REPO/releases?per_page=50" --jq "map(select(.tag_name == \"$TAG\")) | .[0].id // empty")
+          if [ -z "$ID" ]; then
+            ID=$(gh api -X POST "repos/$GH_REPO/releases" -f tag_name="$TAG" -f name="Relay $TAG" \
+              -f body="Relay $TAG — Android APK and Windows installer." -F draft=true --jq .id)
+          fi
+          test -n "$ID"
+          echo "Release id: $ID"
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
 
   windows:
     needs: create-release
